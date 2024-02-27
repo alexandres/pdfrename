@@ -8,6 +8,8 @@ Leverages [pdfminer](https://github.com/pdfminer/pdfminer.six) to extract text a
 
 *Isn't this expensive? In my personal collection of research papers, renaming each PDF uses ~2.1K tokens on average. At `gpt-3.5-turbo-0125` current cost of $0.0005 / 1K tokens, that means renaming each PDF costs ~$0.001 (1 tenth of a penny). I think it's worth it!*
 
+*Why does it add -PR.pdf to the end of filenames? Since the cost is non-zero to rename files, pdfrename needs to keep track of files which have already been renamed to avoid renaming again. I wanted something simpler than having to store a db, using filesystem attributes, or storing additional metadata files. I settled on using this suffix as a marker for renamed files.*
+
 ### Before
 
 ![Before](figures/before.png)
