@@ -14,7 +14,7 @@ Leverages [pdfminer](https://github.com/pdfminer/pdfminer.six) to extract text a
 
 ## FAQ
 
-*Why note use the Title from the PDF metadata? Because it's often missing: in my personal collection of research papers, only 44% of the PDFs have a Title metadata field.*
+*Why not use the Title from the PDF metadata? Because it's often missing: in my personal collection of research papers, only 44% of the PDFs have a Title metadata field.*
 
 *Isn't this expensive? In my personal collection of research papers, renaming each PDF uses ~2.1K tokens on average. At `gpt-3.5-turbo-0125` current cost of $0.0005 / 1K tokens, that means renaming each PDF costs ~$0.001 (1 tenth of a penny). I think it's worth it!*
 
