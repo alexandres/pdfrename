@@ -4,22 +4,33 @@ import re
 import shutil
 import sys
 
-from pdfminer.high_level import extract_text
+import pdfminer.high_level
+import pdfminer.psparser
+import pdfminer.pdfparser
 import openai
 import backoff
 
-openai.api_key = "YOUROPENAIKEY"
-MODEL = "gpt-3.5-turbo-0125"
+MODEL = "gpt-4o-mini"
 
 def main():
     parser = argparse.ArgumentParser(description='Automatically rename PDF files.')
     parser.add_argument('filename', help='PDF file to extract text from')
 
     args = parser.parse_args()
+
+    if not os.path.isfile(args.filename):
+        print(f"{args.filename} is not a file.")
+        sys.exit(1)
+
+    # don't rename files that have already been renamed
     if args.filename.endswith("-PR.pdf"):
         sys.exit(0)
 
-    text = extract_text(args.filename, page_numbers=[0,1,2])
+    try:
+        text = pdfminer.high_level.extract_text(args.filename, page_numbers=[0,1,2])
+    except (pdfminer.psparser.PSSyntaxError, pdfminer.pdfparser.PDFSyntaxError) as e:
+        print(f"Error parsing {args.filename}. Is it a valid PDF file? Error:\n{e}")
+        sys.exit(1)
 
     # just filename from args.filename
     filename = os.path.basename(args.filename)
@@ -43,7 +54,7 @@ def main():
         
         new_filename = response["choices"][0]["message"]["content"].strip()
         # look for strings containing [0-9]{4}---*.pdf
-        filenames = re.findall(".*\.pdf", new_filename)
+        filenames = re.findall(r".*\.pdf", new_filename)
         if len(filenames) > 0:
             new_filename = filenames[-1]
         else:
@@ -81,8 +92,14 @@ def main():
         i += 1
         new_path = f"{base}-({i})-PR.pdf"
 
-    # move and set ctime, mtime
-    shutil.move(args.filename, new_path)
+    # move
+    try:
+        shutil.move(args.filename, new_path)
+    except PermissionError as e:
+        print(f"Error renaming {args.filename} to {new_path}. Permission denied. Error:\n{e}")
+        sys.exit(1)
+    
+    # set ctime, mtime
     os.utime(new_path, (ctime, mtime))
 
 if __name__ == "__main__":
